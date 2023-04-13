@@ -5,12 +5,14 @@ const DownloadFFmpeg = new fluentFFmpeg();
 const StreamFFmpeg = new fluentFFmpeg();
 const BlackStreamFFmpeg = new fluentFFmpeg();
 
-const downloadVideo = () => {
+const videoRTMP = () => {
+  console.log("----------------------------------- Start ----------------------------------------");
   let newVideoName = `${Date.now()}.mp4`;
+  blackStreamVideo();
   DownloadFFmpeg.addInput(constants.videoPublicURL)
     .on("start", function (ffmpegCommand) {
       console.log("Query:" + ffmpegCommand);
-      BlackStreamVideo();
+      console.log("----------------------------------- Download Start! ----------------------------------------");
     })
     .on("progress", function (progress) {
       `frames: ${progress.frames} currentFps: ${progress.currentFps} currentKbps: ${progress.currentKbps} targetSize: ${progress.targetSize} timemark: ${progress.timemark}`;
@@ -23,6 +25,7 @@ const downloadVideo = () => {
     })
     .on("end", function () {
       console.log("Download end reached");
+      console.log("----------------------------------- Download Finish! ----------------------------------------");
       streamVideo(newVideoName);
     })
     .outputOptions([
@@ -36,11 +39,11 @@ const downloadVideo = () => {
 };
 
 const streamVideo = (newVideoName) => {
-  // ffmpeg -re -i "1681311765522.mp4" -c:v copy -c:a aac -ar 44100 -ac 1 -f flv rtmp://localhost/live/stream
+  BlackStreamFFmpeg.kill();
   StreamFFmpeg.addInput(newVideoName)
     .on("start", function (ffmpegCommand) {
       console.log("Query:" + ffmpegCommand);
-      BlackStreamVideo();
+      console.log("----------------------------------- Stream Start & BlackStream Finish! ----------------------------------------");
     })
     .on("progress", function (progress) {
       `frames: ${progress.frames} currentFps: ${progress.currentFps} currentKbps: ${progress.currentKbps} targetSize: ${progress.targetSize} timemark: ${progress.timemark}`;
@@ -53,6 +56,7 @@ const streamVideo = (newVideoName) => {
     })
     .on("end", function () {
       console.log("Stream end reached");
+      console.log("----------------------------------- Stream Finish! ----------------------------------------");
     })
     .outputOptions([
       `-c:v ${constants.videoCodec}`,
@@ -65,10 +69,11 @@ const streamVideo = (newVideoName) => {
     .run();
 };
 
-const BlackStreamVideo = () => {
+const blackStreamVideo = () => {
   // ffmpeg -re -i "1681311765522.mp4" -c:v copy -c:a aac -ar 44100 -ac 1 -f flv rtmp://localhost/live/stream
   BlackStreamFFmpeg.addInput("../black.mp4")
     .on("start", function (ffmpegCommand) {
+      console.log("----------------------------------- BlackStream Start! ----------------------------------------");
       console.log("Query:" + ffmpegCommand);
     })
     .on("progress", function (progress) {
@@ -82,7 +87,12 @@ const BlackStreamVideo = () => {
     })
     .on("end", function () {
       console.log("BlackStream end reached");
+      console.log("----------------------------------- BlackStream Finish! ----------------------------------------");
     })
+    .inputOptions([
+      "-re",
+      "-stream_loop -1"
+    ])
     .outputOptions([
       `-c:v ${constants.videoCodec}`,
       `-c:a ${constants.audioCodec}`,
@@ -94,4 +104,5 @@ const BlackStreamVideo = () => {
     .run();
 };
 
-downloadVideo();
+videoRTMP();
+// streamVideo();

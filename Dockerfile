@@ -58,19 +58,19 @@ RUN apk add ffmpeg
 LABEL maintainer="Sardius Media <support@sardius.media>"
 
 # Create app directory
-WORKDIR /
+WORKDIR /app
 
 # Install app dependencies
 # A wildcard is used to ensure both
 # package.json AND package-lock.json are copied
 # where available (npm@5+)
-# COPY package*.json ./
+COPY . /app/
 RUN npm install
 
 # Copy source code
 # COPY . .
 
 # Set the default command to the root node app
-ENTRYPOINT [ "node", "index.js" ]
+ENTRYPOINT [ "node", "src/index.js" ]
 # CMD [ "node", "src/app.js" ]
 
