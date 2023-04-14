@@ -6,13 +6,11 @@ const StreamFFmpeg = new fluentFFmpeg();
 const BlackStreamFFmpeg = new fluentFFmpeg();
 
 const videoRTMP = () => {
-  console.log("----------------------------------- Start ----------------------------------------");
   let newVideoName = `${Date.now()}.mp4`;
   blackStreamVideo();
   DownloadFFmpeg.addInput(constants.videoPublicURL)
     .on("start", function (ffmpegCommand) {
       console.log("Query:" + ffmpegCommand);
-      console.log("----------------------------------- Download Start! ----------------------------------------");
     })
     .on("progress", function (progress) {
       `frames: ${progress.frames} currentFps: ${progress.currentFps} currentKbps: ${progress.currentKbps} targetSize: ${progress.targetSize} timemark: ${progress.timemark}`;
@@ -25,7 +23,6 @@ const videoRTMP = () => {
     })
     .on("end", function () {
       console.log("Download end reached");
-      console.log("----------------------------------- Download Finish! ----------------------------------------");
       streamVideo(newVideoName);
     })
     .outputOptions([
@@ -39,11 +36,9 @@ const videoRTMP = () => {
 };
 
 const streamVideo = (newVideoName) => {
-  BlackStreamFFmpeg.kill();
   StreamFFmpeg.addInput(newVideoName)
     .on("start", function (ffmpegCommand) {
       console.log("Query:" + ffmpegCommand);
-      console.log("----------------------------------- Stream Start & BlackStream Finish! ----------------------------------------");
     })
     .on("progress", function (progress) {
       `frames: ${progress.frames} currentFps: ${progress.currentFps} currentKbps: ${progress.currentKbps} targetSize: ${progress.targetSize} timemark: ${progress.timemark}`;
@@ -56,7 +51,6 @@ const streamVideo = (newVideoName) => {
     })
     .on("end", function () {
       console.log("Stream end reached");
-      console.log("----------------------------------- Stream Finish! ----------------------------------------");
     })
     .outputOptions([
       `-c:v ${constants.videoCodec}`,
@@ -65,7 +59,7 @@ const streamVideo = (newVideoName) => {
       "-ac 1",
       "-f flv",
     ])
-    .output("rtmp://localhost/live/stream")
+    .output("rtmp://127.0.0.1:1935/live/")
     .run();
 };
 
@@ -100,9 +94,8 @@ const blackStreamVideo = () => {
       "-ac 1",
       "-f flv",
     ])
-    .output("rtmp://localhost/live/stream")
+    .output("rtmp://127.0.0.1:1936/live/")
     .run();
 };
 
 videoRTMP();
-// streamVideo();
